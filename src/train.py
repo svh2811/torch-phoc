@@ -45,7 +45,7 @@ def train():
     logger = logging.getLogger('PHOCNet-Experiment::train')
     logger.info('--- Running PHOCNet Training ---')
     # argument parsing
-    parser = argparse.ArgumentParser()    
+    parser = argparse.ArgumentParser()
     # - train arguments
     parser.add_argument('--learning_rate_step', '-lrs', type=learning_rate_step_parser, default='6000:1e-4,10000:1e-5',
                         help='A dictionary-like string indicating the learning rate for up to the number of iterations. ' +
@@ -131,19 +131,21 @@ def train():
                                min_image_width_height=args.min_image_width_height)
 
     if args.dataset == 'maps':
-        
+
         f = open('../splits/train_files.txt', 'rb')
         all_files = f.readlines()
         all_files = [x.strip('\n') for x in all_files]
         f.close()
 
-        train_set = MAPSDataset(map_root_dir1='/mnt/nfs/work1/elm/ray/original_images/nopad/',
-                               map_root_dir2='/mnt/nfs/work1/elm/ray/original_words/nopad/',
-                               all_files=all_files,
-                               embedding=args.embedding_type,
-                               phoc_unigram_levels=args.phoc_unigram_levels,
-                               fixed_image_size=args.fixed_image_size,
-                               min_image_width_height=args.min_image_width_height)
+        dataset_dir = "../make_dataset/"
+
+        train_set = MAPSDataset(map_root_dir1 = dataset_dir,
+                               map_root_dir2 = dataset_dir,
+                               all_files = all_files,
+                               embedding = args.embedding_type,
+                               phoc_unigram_levels = args.phoc_unigram_levels,
+                               fixed_image_size = args.fixed_image_size,
+                               min_image_width_height = args.min_image_width_height)
 
     test_set = copy.copy(train_set)
 
@@ -172,7 +174,7 @@ def train():
     #print(dir(test_loader))
     # load CNN
     logger.info('Preparing PHOCNet...')
-    
+
     #print(list(train_set[0][1].size()))
     #cnn = PHOCNet(n_out=train_set[0][1].shape[0],
     #              input_channels=3,
@@ -228,7 +230,7 @@ def train():
             logger.info('Evaluating net after %d iterations', iter_idx)
             evaluate_cnn(cnn=cnn,
                          dataset_loader=test_loader,
-                         args=args)        
+                         args=args)
         for _ in range(args.iter_size):
             if train_loader_iter.batches_outstanding == 0:
                 train_loader_iter = DataLoaderIter(loader=train_loader)
@@ -297,7 +299,7 @@ def evaluate_cnn(cnn, dataset_loader, args):
             word_img = word_img.cuda(args.gpu_id[0])
             embedding = embedding.cuda(args.gpu_id[0])
             #word_img, embedding = word_img.cuda(args.gpu_id), embedding.cuda(args.gpu_id)
-        
+
         word_img = torch.autograd.Variable(word_img)
         embedding = torch.autograd.Variable(embedding)
         ''' BCEloss ??? '''
@@ -316,7 +318,7 @@ def evaluate_cnn(cnn, dataset_loader, args):
     qry_class_ids = unique_class_ids[np.where(counts > 1)[0]]
 
     # remove stopwords if needed
-    
+
     qry_ids = [i for i in range(len(class_ids)) if class_ids[i] in qry_class_ids]
     '''
 
